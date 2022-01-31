@@ -2,7 +2,7 @@ SKIPUNZIP=1
 
 # Extract files
 ui_print "- Extracting module files"
-unzip -o "$ZIPFILE" module.prop omc-decoder.jar service.sh -d $MODPATH >&2
+unzip -o "$ZIPFILE" module.prop omc-decoder.jar post-fs-data.sh -d $MODPATH >&2
 
 # Functions
 run_jar() {
@@ -29,13 +29,15 @@ run_jar() {
 # Paths
 omc_root=`getprop persist.sys.omc_root`
 omc_path=`getprop persist.sys.omc_path`
+mdc_path=`getprop mdc.system.path`
+[ -z "$mdc_path" ] || omc_path=$mdc_path
 omc_root_basename="$(basename "$omc_root")"
 omc_root_path="${omc_path%/$omc_root_basename*}/$omc_root_basename"
 omc_parent_path="${omc_path%/$omc_root_basename*}"
 original_files=`find $omc_root_path -type f -name '*.xml'`
 
 # Your script starts here
-ui_print "- copy omc files"
+ui_print "- Copy omc files"
 mkdir -p $MODPATH/$omc_parent_path
 cp -aR $omc_root_path $MODPATH/$omc_parent_path
 ui_print "- Start decodeing..."
@@ -46,6 +48,9 @@ for i in $original_files; do
     ui_print "- Successfully decoded $i!"
   fi
 done
+
+# Change Module OMC Path
+sed -i "s~omc\_root\_path~$omc_root_path~g" $MODPATH/post-fs-data.sh;
 
 # Set executable permissions
 set_perm_recursive "$MODPATH" 0 0 0755 0644
