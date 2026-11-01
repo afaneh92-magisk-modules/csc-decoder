@@ -105,6 +105,6 @@ sed -i "s~omc\_root\_path~$omc_root_path~g" $MODPATH/post-fs-data.sh;
 
 # Set executable permissions
 set_perm_recursive "$MODPATH" 0 0 0755 0644
-
+find $omc_root_path | while read p; do chcon --reference="$p" "$MODPATH$p"; done
 # Clean up files
 rm -rf $MODPATH/omc-decoder
